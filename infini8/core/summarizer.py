@@ -108,7 +108,7 @@ class Summarizer:
 
         return properties_list
 
-    def summarize(self, csv_path: str, llm_config):
+    def summarize(self, csv_path: str, llm_config, dataset_details = ""):
         """
         Summarize the dataset and annotate it using the LLM.
 
@@ -129,6 +129,9 @@ class Summarizer:
             "column_metadata": column_metadata,
         }
 
+        if dataset_details:
+            base_summary["user_provided_details"] = dataset_details
+
         assistant = AssistantAgent("assistant", llm_config=llm_config)
 
         reply = assistant.generate_reply(
@@ -148,10 +151,14 @@ class Summarizer:
         if isinstance(reply, str):
             reply = json.loads(reply)
 
-        # make the path absolute if not already
+        # Append the file_path to the dataset_summary so it can be used later
         if os.path.isabs(csv_path):
             reply["file_path"] = csv_path
         else:
             reply["file_path"] = os.path.abspath(csv_path)
+
+        # Append number of rows and columns to the dataset_summary
+        reply["num_rows"] = df.shape[0]
+        reply["num_columns"] = df.shape[1]
 
         return reply
