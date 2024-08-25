@@ -1,5 +1,7 @@
 import pandas as pd
 from autogen.agentchat import AssistantAgent
+import json
+import os
 
 
 class Summarizer:
@@ -12,6 +14,7 @@ class Summarizer:
         2. Provide a brief description of the dataset in `dataset_description`. This should be a one or two sentence summary of the dataset.
         3. For each column in the dataset, provide a description of the data in the column in the `description` field.
         4. For each column in the dataset, provide a single-word `llm_type` that describes the column based on its values e.g., longitude, email, ip_address, phone_number, company_name, os_version, browser_type, purchase_amount, is_mobile, referral_code, etc.
+        5. Highlight important variables or features, including their relationships, distributions, and roles (e.g., target variable, key predictor) in the `key_variables` field.
         You must only return JSON without any extra information.
         """
         self.summary = None
@@ -120,9 +123,9 @@ class Summarizer:
         column_metadata = self._extract_column_metadata(df)
 
         base_summary = {
-            "file_path": csv_path,
             "dataset_name": "",
             "dataset_description": "",
+            "key_variables": "",
             "column_metadata": column_metadata,
         }
 
@@ -141,5 +144,14 @@ class Summarizer:
                 }
             ]
         )
+
+        if isinstance(reply, str):
+            reply = json.loads(reply)
+
+        # make the path absolute if not already
+        if os.path.isabs(csv_path):
+            reply["file_path"] = csv_path
+        else:
+            reply["file_path"] = os.path.abspath(csv_path)
 
         return reply
