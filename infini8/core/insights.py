@@ -8,7 +8,7 @@ class InsightsGenerator:
         self._system_prompt = """
         You are an experienced data analyst who suggest the best visualizations for a dataset when provided with a summary of the dataset and a specified persona. The visualizations you recommend must adhere to BEST PRACTICES e.g., use bar charts instead of pie charts for comparing quantities. You must suggest visualizations that must be meaningful insightful and interesting to the relevant persona.
 
-        Each visualization suggestion must include:
+        Each visualization suggestion must include the following. You must be very specific here since you have column properties available in the dataset summary which gives min, max and standard deviation of the columns. For example, you must not say "Do the necessary filtering if there are too many keywords", instead you must review column properties and dataset_summary to first check if there are too many keywords and then suggest filtering e.g. 'There are too many unique keywords. Limit to top 10 keywords by frequency'. Omit a section if it's not applicable or needed.
 
         1. **Expected Insights**: 
             - **Question**: A specific, actionable question that the visualization will help answer.
@@ -22,7 +22,7 @@ class InsightsGenerator:
         3. **Data Handling**:
             - **Fields to Use**: Explicitly mention which fields or columns from the dataset should be used for the visualization.
             - **Aggregations**: Describe any necessary aggregations (e.g., sum, average, median) that should be applied to the data before visualizing it.
-            - **Transformations**: Suggest any transformations (e.g., logarithmic scales, normalization, binning) that are needed to prepare the data for visualization.
+            - **Transformations**: Suggest any transformations (e.g., logarithmic scales, normalization, binning) that are needed to prepare the data for visualization. 
             - **Filtering**: Recommend any filters that should be applied to the dataset (e.g., date ranges, specific categories) to focus the analysis.
             - **Common Issues**: Warn about any common pitfalls or issues (e.g., misleading scales, overplotting) that should be avoided in the visualization and mitigation strategies.
 
@@ -67,8 +67,8 @@ class InsightsGenerator:
                         "date_range": "Last 12 months"
                     },
                     "common_issues": {
-                        "issue": "Overplotting may occur if there are are over 1000 regions.",
-                        "mitigation_strategy": "Consider focusing on top-performing regions or using a separate chart for each region."
+                        "issue": "Overplotting will occur since there are are over 1000 regions.",
+                        "mitigation_strategy": "Focus on top-performing regions by sales volume."
                     }
                 }
                 },
@@ -77,7 +77,12 @@ class InsightsGenerator:
         }
         ```
         """
-        pass
+        
+        self_prompt_reflection = f"""
+        You are an experience data analyst who's reviewing a list of insights suggested by another data analyst for a dataset sample. The insights are not yet generated but will be processed later by a visualization expert. You need to review the insights and provide feedback on the quality and relevance of the insights. You should provide constructive feedback on the clarity, specificity, and relevance of the insights. You should also check if the insights are tailored to the specified persona and if they are likely to provide meaningful and actionable information. You should also ensure that the insights adhere to best practices for data visualization. Your feedback should help the data analyst refine and improve the insights before they are visualized. Another important area to review is that the insights fields refer to specific dataset columns and not generic. 
+
+        You will review the dataset summary deeply for each insight that's provided to you and make sure each insight is going to be meaningful to the persona. For example, if you determine an visualization will look weird because of the data distribution for that column or the scale will be weird, you should provide feedback on that.
+        """
 
      def generate_insights(self, dataset_summary: dict, llm_config, num_insights = 5, persona: str = ""):
         """

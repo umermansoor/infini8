@@ -45,9 +45,10 @@ class Summarizer:
         def get_numerical_properties(column: pd.Series) -> dict:
             return {
                 "dtype": "number",
-                "std": self._cast_to_serializable_type(column.dtype, column.std()),
+                "standard_deviation": self._cast_to_serializable_type(column.dtype, column.std()),
                 "min": self._cast_to_serializable_type(column.dtype, column.min()),
                 "max": self._cast_to_serializable_type(column.dtype, column.max()),
+                "num_unique_values": column.nunique(),
             }
 
         def get_date_properties(column: pd.Series) -> dict:
